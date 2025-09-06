@@ -14,5 +14,9 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 # Import and run the MCP server v2
 from src.mcp_server_v2 import mcp
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for MCP server"""
     mcp.run()
+
+if __name__ == "__main__":
+    main()

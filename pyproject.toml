@@ -52,6 +52,11 @@ dependencies = [
     "maxminddb>=2.8.2",
 ]
 
+[project.scripts]
+tmws = "tmws.mcp_server:main"
+tmws-mcp = "tmws.mcp_server:main"
+tmws-api = "main:main"
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
