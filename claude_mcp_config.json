@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "tmws": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "mcp_server.py"
+      ],
+      "cwd": "/Users/apto-as/workspace/github.com/apto-as/trinitas-agents/tmws",
+      "env": {
+        "PYTHONPATH": "/Users/apto-as/workspace/github.com/apto-as/trinitas-agents/tmws/src",
+        "TMWS_DATABASE_URL": "postgresql://tmws_user:tmws_password@localhost:5432/tmws",
+        "TMWS_SECRET_KEY": "development-secret-key-minimum-32-characters-for-testing-only",
+        "TMWS_ENVIRONMENT": "development"
+      }
+    }
+  }
+}

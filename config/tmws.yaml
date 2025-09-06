@@ -1,0 +1,72 @@
+# TMWS v1 Unified Configuration
+# Simple, robust, production-ready
+
+# Service Information
+service:
+  name: "TMWS"
+  version: "1.0.0"
+  description: "Trinitas Memory & Workflow Service"
+
+# Server Configuration
+server:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  reload: false  # Set to true for development
+  
+# MCP Configuration
+mcp:
+  enabled: true
+  port: 8001
+  
+# Database (PostgreSQL + pgvector)
+database:
+  url: "${TMWS_DATABASE_URL}"
+  pool_size: 10
+  max_overflow: 20
+  echo: false  # Set to true for SQL debugging
+  
+# Redis Configuration
+redis:
+  url: "${TMWS_REDIS_URL}"
+  ttl: 3600  # Cache TTL in seconds
+  
+# Security
+security:
+  secret_key: "${TMWS_SECRET_KEY}"
+  jwt_secret: "${TMWS_JWT_SECRET}"
+  jwt_expire_minutes: 30
+  rate_limit_per_minute: 100
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://127.0.0.1:3000"
+    - "http://localhost:8000"
+    
+# Logging
+logging:
+  level: "INFO"
+  format: "json"
+  file: "./logs/tmws.log"
+  
+# Vector Search
+vector:
+  dimension: 384
+  model: "all-MiniLM-L6-v2"
+  
+# Environment-specific overrides
+environments:
+  development:
+    server:
+      reload: true
+    database:
+      echo: true
+    logging:
+      level: "DEBUG"
+      
+  production:
+    server:
+      workers: 8
+    security:
+      rate_limit_per_minute: 1000
+    logging:
+      level: "WARNING"
