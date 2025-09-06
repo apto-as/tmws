@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "tmws": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/YOUR_USERNAME/tmws",
+        "tmws"
+      ],
+      "env": {
+        "DATABASE_URL": "postgresql://localhost/tmws",
+        "REDIS_URL": "redis://localhost:6379/0",
+        "LOG_LEVEL": "DEBUG"
+      }
+    }
+  }
+}
