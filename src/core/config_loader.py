@@ -121,7 +121,14 @@ class ConfigLoader:
                 "persistence": True
             },
             "security": {
-                "auth_enabled": False
+                "auth_enabled": False,
+                "secret_key": os.environ.get("TMWS_SECRET_KEY", "dev-secret-key-change-in-production"),
+                "encryption_master_key": os.environ.get("TMWS_ENCRYPTION_KEY", "dev-encryption-key-change-in-production"),
+                "jwt_algorithm": "HS256",
+                "jwt_expire_minutes": 480,  # 8 hours
+                "rate_limit_per_minute": 60,
+                "max_failed_attempts": 5,
+                "lockout_duration_minutes": 15
             },
             "logging": {
                 "level": os.environ.get("LOG_LEVEL", "INFO"),
@@ -163,6 +170,20 @@ class ConfigLoader:
         if "TMWS_AUTH_ENABLED" in os.environ:
             auth_value = os.environ["TMWS_AUTH_ENABLED"].lower()
             config.setdefault("security", {})["auth_enabled"] = auth_value in ("true", "1", "yes", "on")
+        
+        # Security configuration overrides
+        if "TMWS_SECRET_KEY" in os.environ:
+            config.setdefault("security", {})["secret_key"] = os.environ["TMWS_SECRET_KEY"]
+        
+        if "TMWS_ENCRYPTION_KEY" in os.environ:
+            config.setdefault("security", {})["encryption_master_key"] = os.environ["TMWS_ENCRYPTION_KEY"]
+        
+        if "TMWS_RATE_LIMIT" in os.environ:
+            try:
+                rate_limit = int(os.environ["TMWS_RATE_LIMIT"])
+                config.setdefault("security", {})["rate_limit_per_minute"] = rate_limit
+            except ValueError:
+                pass  # Use default value
         
         # MCP enable/disable
         if "TMWS_MCP_ENABLED" in os.environ:
