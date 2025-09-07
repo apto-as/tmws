@@ -411,5 +411,10 @@ async def main():
             await shutdown_handler()
 
 
-if __name__ == "__main__":
+def run():
+    """Synchronous entry point for package scripts."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()

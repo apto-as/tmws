@@ -54,8 +54,8 @@ dependencies = [
 ]
 
 [project.scripts]
-tmws = "tmws.mcp_server:main"
-tmws-mcp = "tmws.mcp_server:main"
+tmws = "tmws.mcp_server:run"
+tmws-mcp = "tmws.mcp_server:run"
 tmws-api = "main:main"
 
 [project.optional-dependencies]
