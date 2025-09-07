@@ -14,13 +14,10 @@ from datetime import datetime
 from fastmcp import FastMCP
 from pydantic import BaseModel
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from src.services.agent_registry_service import AgentRegistryService
-from src.services.memory_service import MemoryService
-from src.security.agent_auth import AgentAuthService
-from src.core.database import init_database, get_session
+from tmws.services.agent_registry_service import AgentRegistryService
+from tmws.services.memory_service import MemoryService
+from tmws.security.agent_auth import AgentAuthService
+from tmws.core.database import init_database, get_session
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
