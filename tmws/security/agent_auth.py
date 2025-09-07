@@ -19,7 +19,7 @@ class AgentAuthService:
     
     def __init__(self):
         self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-        self.secret_key = settings.TMWS_SECRET_KEY or "dev-secret-key-change-in-production"
+        self.secret_key = getattr(settings, "TMWS_SECRET_KEY", None) or getattr(settings, "secret_key", None) or "dev-secret-key-change-in-production"
         self.algorithm = "HS256"
         self.access_token_expire_minutes = 60
         
