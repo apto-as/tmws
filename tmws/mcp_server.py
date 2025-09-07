@@ -17,7 +17,7 @@ from pydantic import BaseModel
 from tmws.services.agent_registry_service import AgentRegistryService
 from tmws.services.memory_service import MemoryService
 from tmws.security.agent_auth import AgentAuthService
-from tmws.core.database import init_database, get_db_session
+from tmws.core.database import create_tables, get_db_session
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -280,7 +280,7 @@ async def initialize_agent_context():
     logger.info("Initializing TMWS MCP Server v3.0...")
     
     # Initialize database
-    await init_database()
+    await create_tables()
     
     # Initialize services (simplified for now)
     context.registry_service = AgentRegistryService()
