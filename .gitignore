@@ -72,8 +72,8 @@ temp/
 chromadb_data/
 vector_cache/
 
-# ML Models
-models/
+# ML Models (not code models)
+ml_models/
 *.bin
 *.pt
 *.pth
