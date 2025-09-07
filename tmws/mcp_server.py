@@ -17,7 +17,7 @@ from pydantic import BaseModel
 from tmws.services.agent_registry_service import AgentRegistryService
 from tmws.services.memory_service import MemoryService
 from tmws.security.agent_auth import AgentAuthService
-from tmws.core.database import init_database, get_session
+from tmws.core.database import init_database, get_db_session
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -282,14 +282,13 @@ async def initialize_agent_context():
     # Initialize database
     await init_database()
     
-    # Initialize services
-    db_session = await get_session()
-    
+    # Initialize services (simplified for now)
     context.registry_service = AgentRegistryService()
-    await context.registry_service.initialize(db_session)
-    
-    context.memory_service = MemoryService(db_session)
     context.auth_service = AgentAuthService()
+    
+    # For now, create a simple in-memory service
+    # Will need proper session management later
+    context.memory_service = None  # Will be created per-request
     
     # Detect agent from environment
     detected_agent_id = await context.registry_service.detect_agent_from_environment()
@@ -309,12 +308,13 @@ async def initialize_agent_context():
             context.capabilities = {}
         
         # Ensure agent is registered
-        agent = await context.registry_service.ensure_agent(
-            agent_id=detected_agent_id,
-            capabilities=context.capabilities,
-            namespace=context.namespace,
-            auto_create=True
-        )
+        async with get_db_session() as db_session:
+            agent = await context.registry_service.ensure_agent(
+                agent_id=detected_agent_id,
+                capabilities=context.capabilities,
+                namespace=context.namespace,
+                auto_create=True
+            )
         
         if agent:
             context.agent_id = detected_agent_id
@@ -328,11 +328,12 @@ async def initialize_agent_context():
         # Try to use a default agent for testing
         if os.getenv("TMWS_ALLOW_DEFAULT_AGENT") == "true":
             context.agent_id = "default-mcp-agent"
-            await context.registry_service.ensure_agent(
-                agent_id=context.agent_id,
-                namespace="default",
-                auto_create=True
-            )
+            async with get_db_session() as db_session:
+                await context.registry_service.ensure_agent(
+                    agent_id=context.agent_id,
+                    namespace="default",
+                    auto_create=True
+                )
             logger.info("Using default agent for testing")
     
     logger.info(f"MCP Server initialized with agent: {context.agent_id or 'none'}")

@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 
 from ..models.agent import Agent, AgentStatus, AccessLevel
-from ..core.database import get_session
+from ..core.database import get_db_session
 from ..core.exceptions import TMWSException
 
 logger = logging.getLogger(__name__)
