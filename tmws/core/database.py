@@ -9,15 +9,15 @@ from typing import AsyncGenerator, Optional
 import sqlalchemy as sa
 from sqlalchemy import event, pool
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import Session
 
 from .config import get_settings
+# Import the correct Base from models
+from ..models.base import Base
+# Import all models to ensure they are registered with Base
+from ..models import Agent, Memory, Persona, Task, Workflow
 
 logger = logging.getLogger(__name__)
-
-# Base class for all database models
-Base = declarative_base()
 
 # Global variables for database engine and session maker
 _engine: Optional[object] = None
