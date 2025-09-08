@@ -19,7 +19,7 @@ import geoip2.errors
 from fastapi import Request
 from sqlalchemy import Column, String, DateTime, JSON, Integer, Boolean
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy import select
 
 from ..core.config import get_settings

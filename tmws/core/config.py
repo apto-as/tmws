@@ -8,7 +8,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional, Union, List
 import logging
-from pydantic import Field, validator, root_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger(__name__)
@@ -121,7 +121,8 @@ class Settings(BaseSettings):
     cache_max_size: int = Field(default=1000, ge=1, le=100000)
     
     # ==== VALIDATION RULES ====
-    @root_validator(pre=True)
+    @model_validator(mode='before')
+    @classmethod
     def validate_required_env_vars(cls, values):
         """404 Rule: Critical environment variables MUST be set."""
         import os
@@ -159,10 +160,11 @@ class Settings(BaseSettings):
         
         return values
     
-    @validator("secret_key")
-    def validate_secret_key_security(cls, v, values):
+    @field_validator("secret_key")
+    @classmethod
+    def validate_secret_key_security(cls, v, info):
         """404 Security: Secret key must meet cryptographic standards."""
-        environment = values.get("environment", "development")
+        environment = info.data.get("environment", "development")
         
         # Production requirements
         if environment == "production":
@@ -186,10 +188,11 @@ class Settings(BaseSettings):
         
         return v
     
-    @validator("database_url")
-    def validate_database_url_security(cls, v, values):
+    @field_validator("database_url")
+    @classmethod
+    def validate_database_url_security(cls, v, info):
         """404 Security: Database URL validation."""
-        environment = values.get("environment", "development")
+        environment = info.data.get("environment", "development")
         
         if environment == "production":
             # Check for weak credentials in URL
@@ -202,10 +205,11 @@ class Settings(BaseSettings):
         
         return v
     
-    @validator("cors_origins")
-    def validate_cors_security(cls, v, values):
+    @field_validator("cors_origins")
+    @classmethod
+    def validate_cors_security(cls, v, info):
         """404 Security: CORS must be properly configured."""
-        environment = values.get("environment", "development")
+        environment = info.data.get("environment", "development")
         
         if environment == "production":
             if not v:
@@ -224,20 +228,22 @@ class Settings(BaseSettings):
         
         return v
     
-    @validator("api_host")
-    def validate_api_host_security(cls, v, values):
+    @field_validator("api_host")
+    @classmethod
+    def validate_api_host_security(cls, v, info):
         """404 Security: API host validation."""
-        environment = values.get("environment", "development")
+        environment = info.data.get("environment", "development")
         
         if environment == "production" and v == "0.0.0.0":
             logger.warning("API bound to 0.0.0.0 in production - ensure proper firewall/proxy")
         
         return v
     
-    @validator("auth_enabled")
-    def validate_auth_enabled_security(cls, v, values):
+    @field_validator("auth_enabled")
+    @classmethod
+    def validate_auth_enabled_security(cls, v, info):
         """404 Security: Authentication must be enabled in production."""
-        environment = values.get("environment", "development")
+        environment = info.data.get("environment", "development")
         
         if environment == "production" and not v:
             raise ValueError("Authentication MUST be enabled in production environment")

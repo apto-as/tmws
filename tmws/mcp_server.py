@@ -9,7 +9,7 @@ import sys
 import asyncio
 import logging
 from typing import Dict, Any, Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastmcp import FastMCP
 from pydantic import BaseModel
@@ -35,7 +35,7 @@ class AgentContext:
     agent_id: Optional[str] = None
     namespace: str = "default"
     capabilities: Dict[str, Any] = {}
-    session_start: datetime = datetime.utcnow()
+    session_start: datetime = datetime.now(timezone.utc)
     registry_service: Optional[AgentRegistryService] = None
     memory_service: Optional[MemoryService] = None
     auth_service: Optional[AgentAuthService] = None
@@ -55,7 +55,7 @@ async def get_agent_info() -> Dict[str, Any]:
         "namespace": context.namespace,
         "capabilities": context.capabilities,
         "session_start": context.session_start.isoformat(),
-        "session_duration_seconds": (datetime.utcnow() - context.session_start).total_seconds(),
+        "session_duration_seconds": (datetime.now(timezone.utc) - context.session_start).total_seconds(),
         "auto_detected": context.agent_id is not None
     }
 
@@ -714,7 +714,7 @@ async def shutdown_handler():
                 auto_create=False
             )
             if agent:
-                agent.last_active_at = datetime.utcnow()
+                agent.last_active_at = datetime.now(timezone.utc)
         except:
             pass
     
@@ -760,16 +760,12 @@ async def main():
     # Initialize agent context
     await initialize_agent_context()
     
-    # Run MCP server
-    async with mcp:
-        logger.info("TMWS MCP Server v3.0 is running...")
-        logger.info(f"Current agent: {context.agent_id or 'not detected'}")
-        
-        # Keep server running
-        try:
-            await asyncio.Event().wait()
-        except KeyboardInterrupt:
-            await shutdown_handler()
+    # Run MCP server using the run() method
+    logger.info("TMWS MCP Server v3.0 is running...")
+    logger.info(f"Current agent: {context.agent_id or 'not detected'}")
+    
+    # FastMCP handles the event loop internally
+    await mcp.run()
 
 
 def run():

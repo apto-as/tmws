@@ -18,7 +18,7 @@ import geoip2.database
 import geoip2.errors
 from fastapi import Request
 from sqlalchemy import create_engine, Column, String, DateTime, JSON, Integer, Boolean
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from ..core.config import get_settings

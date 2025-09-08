@@ -11,7 +11,7 @@ from enum import Enum
 
 from sqlalchemy import Column, String, DateTime, JSON, Integer, Text, Index, delete, select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 
 logger = logging.getLogger(__name__)
 

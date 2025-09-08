@@ -5,7 +5,7 @@ Manages agent switching and context management for multi-agent operations.
 
 import os
 from typing import Dict, Any, Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -123,7 +123,7 @@ class AgentContextManager:
         self.current_agent = self.default_agent
         self.agent_history: List[Dict[str, Any]] = []
         self.switch_count = 0
-        self.session_start = datetime.utcnow()
+        self.session_start = datetime.now(timezone.utc)
         
         # Load custom agents from config if exists
         self._load_custom_agents_from_config()
@@ -220,7 +220,7 @@ class AgentContextManager:
             "access_level": access_level,
             "display_name": display_name or f"Custom Agent - {short_name}",
             "is_system": False,
-            "registered_at": datetime.utcnow().isoformat(),
+            "registered_at": datetime.now(timezone.utc).isoformat(),
             "metadata": metadata or {}
         }
         
@@ -293,7 +293,7 @@ class AgentContextManager:
         try:
             config = {
                 "version": "1.0",
-                "generated_at": datetime.utcnow().isoformat(),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
                 "custom_agents": list(self.custom_agents.values())
             }
             
@@ -373,7 +373,7 @@ class AgentContextManager:
         self.agent_history.append({
             "from_agent": previous_agent,
             "to_agent": agent_info["full_id"],
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "switch_count": self.switch_count
         })
         
@@ -426,7 +426,7 @@ class AgentContextManager:
             "is_trinitas_agent": current_info.get("is_system", False),
             "is_custom_agent": not current_info.get("is_system", False),
             "switch_count": self.switch_count,
-            "session_duration": (datetime.utcnow() - self.session_start).total_seconds(),
+            "session_duration": (datetime.now(timezone.utc) - self.session_start).total_seconds(),
             "history": self.agent_history[-5:] if self.agent_history else []
         }
     
