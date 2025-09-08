@@ -316,6 +316,10 @@ class Settings(BaseSettings):
         """Get async database URL for asyncpg."""
         if self.database_url.startswith("postgresql://"):
             return self.database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        elif self.database_url.startswith("sqlite"):
+            # For SQLite, use aiosqlite
+            if "aiosqlite" not in self.database_url:
+                return self.database_url.replace("sqlite://", "sqlite+aiosqlite://", 1)
         return self.database_url
     
     def generate_secure_secret_key(self) -> str:
