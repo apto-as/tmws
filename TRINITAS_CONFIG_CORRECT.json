@@ -1,0 +1,200 @@
+{
+  "tmws_server_config": {
+    "description": "TMWS サーバー設定（1つのインスタンスのみ）",
+    "environment_variables": {
+      "TMWS_DATABASE_URL": "postgresql://tmws_user:secure_password@localhost:5432/tmws_trinitas",
+      "TMWS_SECRET_KEY": "tmws-server-secret-key-minimum-32-characters-2024",
+      "TMWS_ENVIRONMENT": "production",
+      "TMWS_AUTH_ENABLED": "true",
+      "TMWS_MCP_ENABLED": "true",
+      "TMWS_API_HOST": "127.0.0.1",
+      "TMWS_API_PORT": "8000",
+      "TMWS_LOG_LEVEL": "INFO",
+      "TMWS_ALLOW_DEFAULT_AGENT": "false",
+      "TMWS_CORS_ORIGINS": "[\"http://localhost:3000\"]",
+      "TMWS_RATE_LIMIT_ENABLED": "true",
+      "TMWS_RATE_LIMIT_REQUESTS": "1000",
+      "TMWS_RATE_LIMIT_PERIOD": "60",
+      "TMWS_EMBEDDING_MODEL": "all-MiniLM-L6-v2",
+      "TMWS_VECTOR_DIMENSION": "384",
+      "TMWS_SECURITY_HEADERS_ENABLED": "true",
+      "TMWS_AUDIT_LOG_ENABLED": "true"
+    }
+  },
+  
+  "agent_connections": {
+    "description": "各Trinitasエージェントが接続時に設定する環境変数",
+    
+    "athena_conductor": {
+      "description": "Athenaが接続時に使用する設定",
+      "client_environment": {
+        "TMWS_AGENT_ID": "athena-conductor",
+        "TMWS_AGENT_NAMESPACE": "trinitas",
+        "TMWS_AGENT_CAPABILITIES": "{\"orchestration\": true, \"workflow_automation\": true, \"resource_optimization\": true, \"parallel_execution\": true, \"task_delegation\": true, \"system_coordination\": true}"
+      }
+    },
+    
+    "artemis_optimizer": {
+      "description": "Artemisが接続時に使用する設定",
+      "client_environment": {
+        "TMWS_AGENT_ID": "artemis-optimizer",
+        "TMWS_AGENT_NAMESPACE": "trinitas",
+        "TMWS_AGENT_CAPABILITIES": "{\"performance_optimization\": true, \"code_quality\": true, \"technical_excellence\": true, \"algorithm_design\": true, \"efficiency_improvement\": true, \"best_practices\": true}"
+      }
+    },
+    
+    "hestia_auditor": {
+      "description": "Hestiaが接続時に使用する設定",
+      "client_environment": {
+        "TMWS_AGENT_ID": "hestia-auditor",
+        "TMWS_AGENT_NAMESPACE": "trinitas",
+        "TMWS_AGENT_CAPABILITIES": "{\"security_analysis\": true, \"vulnerability_assessment\": true, \"risk_management\": true, \"threat_modeling\": true, \"compliance_verification\": true, \"audit_logging\": true}"
+      }
+    },
+    
+    "eris_coordinator": {
+      "description": "Erisが接続時に使用する設定",
+      "client_environment": {
+        "TMWS_AGENT_ID": "eris-coordinator",
+        "TMWS_AGENT_NAMESPACE": "trinitas",
+        "TMWS_AGENT_CAPABILITIES": "{\"tactical_planning\": true, \"team_coordination\": true, \"conflict_resolution\": true, \"workflow_orchestration\": true, \"collaboration\": true, \"balance_adjustment\": true}"
+      }
+    },
+    
+    "hera_strategist": {
+      "description": "Heraが接続時に使用する設定",
+      "client_environment": {
+        "TMWS_AGENT_ID": "hera-strategist",
+        "TMWS_AGENT_NAMESPACE": "trinitas",
+        "TMWS_AGENT_CAPABILITIES": "{\"strategic_planning\": true, \"architecture_design\": true, \"long_term_vision\": true, \"roadmap_development\": true, \"stakeholder_management\": true, \"user_experience\": true}"
+      }
+    },
+    
+    "muses_documenter": {
+      "description": "Musesが接続時に使用する設定",
+      "client_environment": {
+        "TMWS_AGENT_ID": "muses-documenter",
+        "TMWS_AGENT_NAMESPACE": "trinitas",
+        "TMWS_AGENT_CAPABILITIES": "{\"documentation\": true, \"knowledge_management\": true, \"specification_writing\": true, \"api_documentation\": true, \"archive_management\": true, \"content_structuring\": true}"
+      }
+    }
+  },
+  
+  "database_structure": {
+    "description": "データベース内でのエージェント識別",
+    "tables": {
+      "agents": {
+        "description": "全エージェントの登録情報",
+        "columns": [
+          "agent_id (PRIMARY KEY) - 例: 'athena-conductor'",
+          "namespace - 例: 'trinitas'",
+          "display_name - 例: 'Athena - Harmonious Conductor'",
+          "capabilities (JSON)",
+          "status",
+          "created_at",
+          "last_active_at"
+        ]
+      },
+      "memories_v2": {
+        "description": "エージェントごとのメモリ",
+        "columns": [
+          "id (UUID)",
+          "agent_id (FK) - どのエージェントのメモリか",
+          "namespace - メモリの名前空間",
+          "content",
+          "embedding (vector)",
+          "access_level (private/team/shared/public/system)",
+          "shared_with_agents (JSON array)",
+          "created_at"
+        ]
+      },
+      "memory_sharing": {
+        "description": "エージェント間のメモリ共有",
+        "columns": [
+          "memory_id (FK)",
+          "shared_by_agent_id",
+          "shared_with_agent_id",
+          "permission (read/write/delete)",
+          "shared_at"
+        ]
+      }
+    },
+    
+    "access_control": {
+      "description": "メモリアクセス制御ルール",
+      "rules": [
+        "agent_id = 'athena-conductor' AND namespace = 'trinitas' → system権限",
+        "agent_id = 'hestia-auditor' AND namespace = 'trinitas' → 監査権限",
+        "同じnamespace内のエージェント → team権限でアクセス可能",
+        "access_level = 'public' → 全エージェントがアクセス可能",
+        "access_level = 'private' → 作成したエージェントのみ"
+      ]
+    }
+  },
+  
+  "deployment": {
+    "description": "正しいデプロイメント構成",
+    "architecture": {
+      "tmws_server": "1インスタンス（ポート8000）",
+      "postgresql": "1インスタンス（ポート5432）",
+      "redis": "1インスタンス（オプション、キャッシュ用）",
+      "agents": "MCPクライアントとして接続（数は無制限）"
+    },
+    
+    "docker_compose_simplified": {
+      "services": {
+        "postgres": {
+          "image": "pgvector/pgvector:pg16",
+          "ports": ["5432:5432"]
+        },
+        "tmws": {
+          "image": "tmws:latest",
+          "ports": ["8000:8000"],
+          "depends_on": ["postgres"]
+        },
+        "redis": {
+          "image": "redis:7-alpine",
+          "ports": ["6379:6379"]
+        }
+      }
+    }
+  },
+  
+  "mcp_client_config": {
+    "description": "Claude DesktopなどのMCPクライアント設定",
+    "claude_config_json": {
+      "mcpServers": {
+        "tmws": {
+          "command": "uvx",
+          "args": ["--from", "git+https://github.com/apto-as/tmws.git", "tmws"],
+          "env": {
+            "comment": "各エージェントごとに異なるTMWS_AGENT_IDを設定",
+            "TMWS_AGENT_ID": "athena-conductor",
+            "TMWS_AGENT_NAMESPACE": "trinitas",
+            "TMWS_AGENT_CAPABILITIES": "{\"orchestration\": true}"
+          }
+        }
+      }
+    }
+  },
+  
+  "example_usage": {
+    "description": "実際の使用例",
+    "steps": [
+      "1. TMWSサーバーを起動（1回のみ）",
+      "   docker-compose up -d",
+      "",
+      "2. 各Claudeインスタンスで異なるagent_idを設定",
+      "   - Claude 1: TMWS_AGENT_ID=athena-conductor",
+      "   - Claude 2: TMWS_AGENT_ID=artemis-optimizer",
+      "   - Claude 3: TMWS_AGENT_ID=hestia-auditor",
+      "",
+      "3. 各エージェントがMCP経由でTMWSに接続",
+      "   全て同じTMWSサーバー（localhost:8000）に接続",
+      "",
+      "4. データベース内でagent_idによって識別",
+      "   - メモリは自動的に各エージェントに紐付け",
+      "   - namespaceとaccess_levelで共有制御"
+    ]
+  }
+}

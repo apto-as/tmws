@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (共有データベース - 1つのみ)
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: tmws_postgres
+    environment:
+      POSTGRES_DB: tmws_trinitas
+      POSTGRES_USER: tmws_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - tmws_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tmws_user -d tmws_trinitas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # TMWS Server (1つのみ - 全エージェントが接続)
+  tmws:
+    image: tmws:latest
+    container_name: tmws_server
+    environment:
+      # サーバー設定
+      TMWS_DATABASE_URL: postgresql://tmws_user:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/tmws_trinitas
+      TMWS_SECRET_KEY: ${TMWS_SECRET_KEY:-tmws-server-secret-key-minimum-32-characters}
+      TMWS_ENVIRONMENT: ${TMWS_ENVIRONMENT:-production}
+      
+      # API設定
+      TMWS_API_HOST: 0.0.0.0
+      TMWS_API_PORT: 8000
+      TMWS_AUTH_ENABLED: "true"
+      TMWS_MCP_ENABLED: "true"
+      
+      # セキュリティ設定
+      TMWS_CORS_ORIGINS: '["http://localhost:3000", "http://localhost:8080"]'
+      TMWS_SECURITY_HEADERS_ENABLED: "true"
+      TMWS_AUDIT_LOG_ENABLED: "true"
+      
+      # レート制限
+      TMWS_RATE_LIMIT_ENABLED: "true"
+      TMWS_RATE_LIMIT_REQUESTS: "1000"
+      TMWS_RATE_LIMIT_PERIOD: "60"
+      
+      # ベクトル検索
+      TMWS_EMBEDDING_MODEL: all-MiniLM-L6-v2
+      TMWS_VECTOR_DIMENSION: "384"
+      
+      # ログ設定
+      TMWS_LOG_LEVEL: ${TMWS_LOG_LEVEL:-INFO}
+      TMWS_LOG_FILE: /app/logs/tmws.log
+    
+    depends_on:
+      postgres:
+        condition: service_healthy
+    
+    ports:
+      - "8000:8000"  # FastAPI
+      - "5001:5001"  # MCP (if separate port)
+    
+    volumes:
+      - ./logs:/app/logs
+      - ./config:/app/config:ro
+    
+    networks:
+      - tmws_network
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    
+    restart: unless-stopped
+
+  # Redis Cache (オプション)
+  redis:
+    image: redis:7-alpine
+    container_name: tmws_redis
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - tmws_network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (オプション - 本番環境用)
+  nginx:
+    image: nginx:alpine
+    container_name: tmws_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - tmws
+    networks:
+      - tmws_network
+    restart: unless-stopped
+
+networks:
+  tmws_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
