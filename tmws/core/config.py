@@ -12,6 +12,8 @@ import logging
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+logger = logging.getLogger(__name__)
+
 # Load .env file if it exists
 try:
     from dotenv import load_dotenv
@@ -29,8 +31,6 @@ try:
 except ImportError:
     # dotenv not installed, continue without it
     pass
-
-logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
