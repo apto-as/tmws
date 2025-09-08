@@ -772,13 +772,13 @@ def run():
     """Synchronous entry point for package scripts."""
     import asyncio
     
-    async def main():
-        await initialize_agent_context()
-        logger.info("TMWS MCP Server v3.0 is running...")
-        logger.info(f"Current agent: {context.agent_id or 'not detected'}")
-        await mcp.run()
+    # Run initialization
+    asyncio.run(initialize_agent_context())
+    logger.info("TMWS MCP Server v3.0 is running...")
+    logger.info(f"Current agent: {context.agent_id or 'not detected'}")
     
-    asyncio.run(main())
+    # Run the MCP server (this is synchronous and handles its own event loop)
+    mcp.run()
 
 
 if __name__ == "__main__":
