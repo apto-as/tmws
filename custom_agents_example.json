@@ -1,0 +1,101 @@
+{
+  "version": "1.0",
+  "description": "Custom agent configuration example for TMWS",
+  "custom_agents": [
+    {
+      "name": "researcher",
+      "full_id": "research-specialist",
+      "namespace": "academic",
+      "display_name": "Research Specialist",
+      "access_level": "team",
+      "capabilities": [
+        "literature_review",
+        "data_analysis",
+        "hypothesis_generation",
+        "experiment_design",
+        "statistical_analysis",
+        "paper_writing"
+      ],
+      "metadata": {
+        "specialization": "AI/ML Research",
+        "languages": ["English", "Japanese"],
+        "tools": ["Python", "R", "LaTeX"]
+      }
+    },
+    {
+      "name": "designer",
+      "full_id": "ux-designer",
+      "namespace": "creative",
+      "display_name": "UX/UI Designer",
+      "access_level": "team",
+      "capabilities": [
+        "ui_design",
+        "user_research",
+        "prototyping",
+        "wireframing",
+        "design_systems",
+        "accessibility"
+      ],
+      "metadata": {
+        "tools": ["Figma", "Sketch", "Adobe XD"],
+        "expertise": ["Mobile", "Web", "Dashboard"]
+      }
+    },
+    {
+      "name": "devops",
+      "full_id": "devops-engineer",
+      "namespace": "infrastructure",
+      "display_name": "DevOps Engineer",
+      "access_level": "private",
+      "capabilities": [
+        "ci_cd_pipeline",
+        "containerization",
+        "kubernetes",
+        "infrastructure_as_code",
+        "monitoring",
+        "security_scanning"
+      ],
+      "metadata": {
+        "platforms": ["AWS", "GCP", "Azure"],
+        "tools": ["Docker", "Kubernetes", "Terraform", "Jenkins"]
+      }
+    },
+    {
+      "name": "translator",
+      "full_id": "multilingual-translator",
+      "namespace": "language",
+      "display_name": "Multilingual Translator",
+      "access_level": "public",
+      "capabilities": [
+        "translation",
+        "localization",
+        "cultural_adaptation",
+        "technical_writing",
+        "proofreading"
+      ],
+      "metadata": {
+        "languages": ["English", "Japanese", "Chinese", "Korean", "Spanish"],
+        "specialties": ["Technical", "Legal", "Medical", "Literary"]
+      }
+    },
+    {
+      "name": "analyst",
+      "full_id": "business-analyst",
+      "namespace": "business",
+      "display_name": "Business Analyst",
+      "access_level": "team",
+      "capabilities": [
+        "requirements_gathering",
+        "process_mapping",
+        "data_visualization",
+        "stakeholder_management",
+        "risk_assessment",
+        "cost_benefit_analysis"
+      ],
+      "metadata": {
+        "methodologies": ["Agile", "Waterfall", "Lean Six Sigma"],
+        "tools": ["JIRA", "Confluence", "Tableau", "Power BI"]
+      }
+    }
+  ]
+}

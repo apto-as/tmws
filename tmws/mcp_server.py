@@ -431,6 +431,203 @@ async def execute_as_agent(
         context.capabilities = original_capabilities
         context.agent_manager.current_agent = original_agent
 
+# Custom Agent Registration Tools
+
+@mcp.tool()
+async def register_agent(
+    agent_name: str,
+    full_id: str,
+    capabilities: List[str],
+    namespace: str = "custom",
+    display_name: Optional[str] = None,
+    access_level: str = "private",
+    metadata: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
+    """
+    Register a custom agent dynamically.
+    
+    Args:
+        agent_name: Short identifier for the agent (2-32 chars, alphanumeric with hyphens/underscores)
+        full_id: Full unique identifier (3-64 chars)
+        capabilities: List of agent capabilities
+        namespace: Agent namespace (default: "custom")
+        display_name: Human-readable display name
+        access_level: Access level (private, team, shared, public)
+        metadata: Additional metadata as JSON object
+    
+    Returns:
+        Registration result with success status
+    
+    Example:
+        register_agent("researcher", "research-specialist", 
+                      ["data_analysis", "literature_review"],
+                      namespace="academic",
+                      display_name="Research Specialist")
+    """
+    
+    if not context.agent_manager:
+        return {
+            "error": "Agent manager not initialized"
+        }
+    
+    # Register with the agent manager
+    result = context.agent_manager.register_custom_agent(
+        short_name=agent_name,
+        full_id=full_id,
+        capabilities=capabilities,
+        namespace=namespace,
+        display_name=display_name,
+        access_level=access_level,
+        metadata=metadata
+    )
+    
+    # If successful, also register in database
+    if result.get("success"):
+        try:
+            async with get_db_session() as db_session:
+                await context.registry_service.ensure_agent(
+                    agent_id=full_id,
+                    capabilities={cap: True for cap in capabilities},
+                    namespace=namespace,
+                    auto_create=True
+                )
+            logger.info(f"Custom agent '{agent_name}' registered in database")
+        except Exception as e:
+            logger.warning(f"Could not register agent in database: {e}")
+    
+    return result
+
+
+@mcp.tool()
+async def unregister_agent(agent_name: str) -> Dict[str, Any]:
+    """
+    Unregister a custom agent.
+    
+    Args:
+        agent_name: Short name of the agent to unregister
+    
+    Returns:
+        Result with success status
+    
+    Note:
+        - Cannot unregister Trinitas system agents
+        - If the current agent is unregistered, switches to default
+    """
+    
+    if not context.agent_manager:
+        return {
+            "error": "Agent manager not initialized"
+        }
+    
+    # Unregister from the agent manager
+    result = context.agent_manager.unregister_custom_agent(agent_name)
+    
+    # If successful, also mark as inactive in database
+    if result.get("success"):
+        try:
+            removed_agent = result.get("removed_agent", {})
+            full_id = removed_agent.get("full_id")
+            if full_id:
+                # Note: We don't delete from DB, just mark as inactive
+                # This preserves historical data
+                logger.info(f"Custom agent '{agent_name}' marked as inactive in database")
+        except Exception as e:
+            logger.warning(f"Could not update agent status in database: {e}")
+    
+    return result
+
+
+@mcp.tool()
+async def save_agent_profiles(filepath: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Save all custom agents to a configuration file.
+    
+    Args:
+        filepath: Path to save the configuration (default: custom_agents.json)
+    
+    Returns:
+        Save result with filepath
+    """
+    
+    if not context.agent_manager:
+        return {
+            "error": "Agent manager not initialized"
+        }
+    
+    return context.agent_manager.save_custom_agents(filepath)
+
+
+@mcp.tool()
+async def load_agent_profiles(filepath: str) -> Dict[str, Any]:
+    """
+    Load custom agents from a configuration file.
+    
+    Args:
+        filepath: Path to the configuration file
+    
+    Returns:
+        Load result with number of agents loaded
+    """
+    
+    if not context.agent_manager:
+        return {
+            "error": "Agent manager not initialized"
+        }
+    
+    import json
+    
+    try:
+        with open(filepath, 'r') as f:
+            config = json.load(f)
+        
+        if "custom_agents" not in config:
+            return {
+                "error": "Invalid configuration file: missing 'custom_agents' key"
+            }
+        
+        loaded_count = 0
+        errors = []
+        
+        for agent in config["custom_agents"]:
+            try:
+                result = context.agent_manager.register_custom_agent(
+                    short_name=agent.get("name") or agent.get("short_name"),
+                    full_id=agent["full_id"],
+                    capabilities=agent.get("capabilities", []),
+                    namespace=agent.get("namespace", "custom"),
+                    display_name=agent.get("display_name"),
+                    access_level=agent.get("access_level", "private"),
+                    metadata=agent.get("metadata")
+                )
+                
+                if result.get("success"):
+                    loaded_count += 1
+                else:
+                    errors.append(f"{agent.get('name', 'unknown')}: {result.get('error')}")
+                    
+            except Exception as e:
+                errors.append(f"{agent.get('name', 'unknown')}: {str(e)}")
+        
+        return {
+            "success": True,
+            "loaded": loaded_count,
+            "total": len(config["custom_agents"]),
+            "errors": errors if errors else None
+        }
+        
+    except FileNotFoundError:
+        return {
+            "error": f"Configuration file not found: {filepath}"
+        }
+    except json.JSONDecodeError as e:
+        return {
+            "error": f"Invalid JSON in configuration file: {e}"
+        }
+    except Exception as e:
+        return {
+            "error": f"Failed to load configuration: {e}"
+        }
+
 
 async def initialize_agent_context():
     """Initialize agent context from environment."""
