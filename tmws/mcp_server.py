@@ -22,13 +22,15 @@ from tmws.core.database import create_tables, get_db_session
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+# Import AgentContextManager for agent switching
+from tmws.agent_context_manager import AgentContextManager
 
 # Initialize MCP server
 mcp = FastMCP("TMWS Universal Agent Memory System v3.0")
 
 
 class AgentContext:
-    """Global agent context for MCP session."""
+    """Global agent context for MCP session with agent switching support."""
     
     agent_id: Optional[str] = None
     namespace: str = "default"
@@ -37,6 +39,7 @@ class AgentContext:
     registry_service: Optional[AgentRegistryService] = None
     memory_service: Optional[MemoryService] = None
     auth_service: Optional[AgentAuthService] = None
+    agent_manager: Optional['AgentContextManager'] = None  # For agent switching
 
 
 # Global context instance
@@ -273,6 +276,161 @@ async def update_capabilities(capabilities: Dict[str, Any]) -> Dict[str, Any]:
             "error": str(e)
         }
 
+# Agent Switching Tools
+
+@mcp.tool()
+async def switch_agent(agent_name: str) -> Dict[str, Any]:
+    """
+    Switch to a different Trinitas agent context.
+    
+    Args:
+        agent_name: Agent name (athena, artemis, hestia, eris, hera, or muses)
+    
+    Returns:
+        Result with agent information or error
+    """
+    
+    if not context.agent_manager:
+        return {
+            "error": "Agent manager not initialized"
+        }
+    
+    # Perform the switch
+    result = context.agent_manager.switch_agent(agent_name)
+    
+    if result.get("success"):
+        # Update the global context with new agent info
+        context.agent_id = result["full_id"]
+        
+        # Update namespace if it's a Trinitas agent
+        if agent_name in context.agent_manager.TRINITAS_AGENTS:
+            agent_info = context.agent_manager.TRINITAS_AGENTS[agent_name]
+            context.namespace = agent_info["namespace"]
+            context.capabilities = {cap: True for cap in agent_info["capabilities"]}
+        
+        # Ensure the new agent is registered
+        try:
+            async with get_db_session() as db_session:
+                await context.registry_service.ensure_agent(
+                    agent_id=context.agent_id,
+                    capabilities=context.capabilities,
+                    namespace=context.namespace,
+                    auto_create=True
+                )
+        except Exception as e:
+            logger.warning(f"Could not register switched agent: {e}")
+    
+    return result
+
+
+@mcp.tool()
+async def get_current_agent() -> Dict[str, Any]:
+    """
+    Get the current agent context information.
+    
+    Returns:
+        Current agent details including capabilities and history
+    """
+    
+    if not context.agent_manager:
+        # Fallback to basic info if agent manager not initialized
+        return {
+            "current_agent": context.agent_id or "not_detected",
+            "namespace": context.namespace,
+            "capabilities": context.capabilities,
+            "is_trinitas_agent": False
+        }
+    
+    return context.agent_manager.get_current_agent_context()
+
+
+@mcp.tool()
+async def list_trinitas_agents() -> Dict[str, Any]:
+    """
+    List all available Trinitas agents and their capabilities.
+    
+    Returns:
+        List of Trinitas agents with their information
+    """
+    
+    if not context.agent_manager:
+        return {
+            "error": "Agent manager not initialized"
+        }
+    
+    agents = context.agent_manager.list_available_agents()
+    
+    return {
+        "success": True,
+        "agents": agents,
+        "current_agent": context.agent_manager.current_agent,
+        "switch_count": context.agent_manager.switch_count
+    }
+
+
+@mcp.tool()
+async def execute_as_agent(
+    agent_name: str,
+    action: str,
+    parameters: Dict[str, Any] = None
+) -> Dict[str, Any]:
+    """
+    Execute an action as a specific agent temporarily.
+    
+    Args:
+        agent_name: Agent to execute as (athena, artemis, etc.)
+        action: Action to perform (create_memory, search_memories, etc.)
+        parameters: Parameters for the action
+    
+    Returns:
+        Result of the action execution
+    """
+    
+    if not context.agent_manager:
+        return {
+            "error": "Agent manager not initialized"
+        }
+    
+    # Save current agent
+    original_agent = context.agent_id
+    original_namespace = context.namespace
+    original_capabilities = context.capabilities
+    
+    try:
+        # Switch to target agent
+        switch_result = await switch_agent(agent_name)
+        if not switch_result.get("success"):
+            return {
+                "error": f"Failed to switch to agent {agent_name}: {switch_result.get('error')}"
+            }
+        
+        # Execute the action
+        if action == "create_memory":
+            result = await create_memory(**parameters)
+        elif action == "search_memories":
+            result = await search_memories(**parameters)
+        elif action == "share_memory":
+            result = await share_memory(**parameters)
+        elif action == "get_agent_statistics":
+            result = await get_agent_statistics()
+        elif action == "update_capabilities":
+            result = await update_capabilities(**parameters)
+        else:
+            result = {"error": f"Unknown action: {action}"}
+        
+        return {
+            "executed_as": agent_name,
+            "action": action,
+            "result": result
+        }
+        
+    finally:
+        # Restore original agent
+        context.agent_id = original_agent
+        context.namespace = original_namespace
+        context.capabilities = original_capabilities
+        context.agent_manager.current_agent = original_agent
+
 
 async def initialize_agent_context():
     """Initialize agent context from environment."""
@@ -285,6 +443,9 @@ async def initialize_agent_context():
     # Initialize services (simplified for now)
     context.registry_service = AgentRegistryService()
     context.auth_service = AgentAuthService()
+    
+    # Initialize AgentContextManager for agent switching
+    context.agent_manager = AgentContextManager()
     
     # For now, create a simple in-memory service
     # Will need proper session management later
@@ -318,6 +479,8 @@ async def initialize_agent_context():
         
         if agent:
             context.agent_id = detected_agent_id
+            # Also update the agent manager's current agent
+            context.agent_manager.current_agent = detected_agent_id
             logger.info(f"Agent registered/updated: {detected_agent_id}")
         else:
             logger.error(f"Failed to register agent: {detected_agent_id}")
@@ -328,6 +491,7 @@ async def initialize_agent_context():
         # Try to use a default agent for testing
         if os.getenv("TMWS_ALLOW_DEFAULT_AGENT") == "true":
             context.agent_id = "default-mcp-agent"
+            context.agent_manager.current_agent = context.agent_id
             async with get_db_session() as db_session:
                 await context.registry_service.ensure_agent(
                     agent_id=context.agent_id,
