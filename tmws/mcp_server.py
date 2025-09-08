@@ -760,16 +760,24 @@ async def main():
     # Initialize agent context
     await initialize_agent_context()
     
-    # Run MCP server using the run() method
+    # Run MCP server
     logger.info("TMWS MCP Server v3.0 is running...")
     logger.info(f"Current agent: {context.agent_id or 'not detected'}")
     
-    # FastMCP handles the event loop internally
-    await mcp.run()
+    # Start the MCP server and wait
+    await mcp.run_async()  # Use run_async for existing event loop
 
 
 def run():
     """Synchronous entry point for package scripts."""
+    import asyncio
+    
+    async def main():
+        await initialize_agent_context()
+        logger.info("TMWS MCP Server v3.0 is running...")
+        logger.info(f"Current agent: {context.agent_id or 'not detected'}")
+        await mcp.run()
+    
     asyncio.run(main())
 
 

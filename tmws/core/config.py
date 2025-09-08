@@ -3,6 +3,7 @@ Configuration management for TMWS.
 404 Security Standards: Zero compromise, zero defaults for sensitive data.
 """
 import os
+import sys
 import secrets
 from functools import lru_cache
 from pathlib import Path
@@ -148,15 +149,32 @@ class Settings(BaseSettings):
                 os.environ.get('ENVIRONMENT', 'development')
             )
         
-        # Validate required fields - only database_url and secret_key are truly required
-        errors = []
-        if not values.get('database_url'):
-            errors.append("TMWS_DATABASE_URL environment variable is required")
-        if not values.get('secret_key'):
-            errors.append("TMWS_SECRET_KEY environment variable is required")
+        # Check if running as MCP server
+        is_mcp_mode = (
+            os.environ.get('MCP_MODE', 'false').lower() == 'true' or
+            'mcp_server' in sys.argv[0] or
+            any('mcp' in arg for arg in sys.argv)
+        )
         
-        if errors:
-            raise ValueError(f"Critical configuration missing: {'; '.join(errors)}")
+        # In MCP mode, provide defaults for missing values
+        if is_mcp_mode:
+            if not values.get('database_url'):
+                # Use SQLite for MCP mode if no database is configured
+                values['database_url'] = 'sqlite+aiosqlite:///tmws_mcp.db'
+            if not values.get('secret_key'):
+                # Generate a temporary secret key for MCP mode
+                import secrets
+                values['secret_key'] = secrets.token_urlsafe(32)
+        else:
+            # For non-MCP mode, validate required fields
+            errors = []
+            if not values.get('database_url'):
+                errors.append("TMWS_DATABASE_URL environment variable is required")
+            if not values.get('secret_key'):
+                errors.append("TMWS_SECRET_KEY environment variable is required")
+            
+            if errors:
+                raise ValueError(f"Critical configuration missing: {'; '.join(errors)}")
         
         return values
     
