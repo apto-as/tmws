@@ -12,6 +12,24 @@ import logging
 from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Load .env file if it exists
+try:
+    from dotenv import load_dotenv
+    # Look for .env file in multiple locations
+    env_paths = [
+        Path.cwd() / '.env',  # Current directory
+        Path.home() / '.tmws' / '.env',  # User home directory
+        Path(__file__).parent.parent.parent / '.env',  # Project root
+    ]
+    for env_path in env_paths:
+        if env_path.exists():
+            load_dotenv(env_path, override=True)
+            logger.info(f"Loaded environment from {env_path}")
+            break
+except ImportError:
+    # dotenv not installed, continue without it
+    pass
+
 logger = logging.getLogger(__name__)
 
 
