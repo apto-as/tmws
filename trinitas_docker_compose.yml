@@ -1,0 +1,185 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: tmws_trinitas
+      POSTGRES_USER: tmws_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - tmws_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tmws_user -d tmws_trinitas"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Athena - Harmonious Conductor
+  athena:
+    image: tmws:latest
+    environment:
+      TMWS_DATABASE_URL: postgresql://tmws_user:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/tmws_trinitas
+      TMWS_SECRET_KEY: ${ATHENA_SECRET_KEY:-athena-secret-key-minimum-32-characters}
+      TMWS_ENVIRONMENT: production
+      TMWS_AGENT_ID: athena-conductor
+      TMWS_AGENT_NAMESPACE: trinitas
+      TMWS_AGENT_CAPABILITIES: '{"orchestration": true, "workflow_automation": true}'
+      TMWS_AUTH_ENABLED: "true"
+      TMWS_MCP_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tmws_network
+    ports:
+      - "8001:8000"
+
+  # Artemis - Technical Perfectionist
+  artemis:
+    image: tmws:latest
+    environment:
+      TMWS_DATABASE_URL: postgresql://tmws_user:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/tmws_trinitas
+      TMWS_SECRET_KEY: ${ARTEMIS_SECRET_KEY:-artemis-secret-key-minimum-32-characters}
+      TMWS_ENVIRONMENT: production
+      TMWS_AGENT_ID: artemis-optimizer
+      TMWS_AGENT_NAMESPACE: trinitas
+      TMWS_AGENT_CAPABILITIES: '{"performance_optimization": true, "code_quality": true}'
+      TMWS_AUTH_ENABLED: "true"
+      TMWS_MCP_ENABLED: "true"
+      TMWS_TACTICAL_MODE: aggressive
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tmws_network
+    ports:
+      - "8002:8000"
+
+  # Hestia - Security Guardian
+  hestia:
+    image: tmws:latest
+    environment:
+      TMWS_DATABASE_URL: postgresql://tmws_user:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/tmws_trinitas
+      TMWS_SECRET_KEY: ${HESTIA_SECRET_KEY:-hestia-secret-key-minimum-32-characters}
+      TMWS_ENVIRONMENT: production
+      TMWS_AGENT_ID: hestia-auditor
+      TMWS_AGENT_NAMESPACE: trinitas
+      TMWS_AGENT_CAPABILITIES: '{"security_analysis": true, "vulnerability_assessment": true}'
+      TMWS_AUTH_ENABLED: "true"
+      TMWS_MCP_ENABLED: "true"
+      TMWS_SECURITY_HEADERS_ENABLED: "true"
+      TMWS_AUDIT_LOG_ENABLED: "true"
+      TMWS_TACTICAL_MODE: defensive
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tmws_network
+    ports:
+      - "8003:8000"
+    volumes:
+      - audit_logs:/app/logs
+
+  # Eris - Tactical Coordinator
+  eris:
+    image: tmws:latest
+    environment:
+      TMWS_DATABASE_URL: postgresql://tmws_user:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/tmws_trinitas
+      TMWS_SECRET_KEY: ${ERIS_SECRET_KEY:-eris-secret-key-minimum-32-characters}
+      TMWS_ENVIRONMENT: production
+      TMWS_AGENT_ID: eris-coordinator
+      TMWS_AGENT_NAMESPACE: trinitas
+      TMWS_AGENT_CAPABILITIES: '{"tactical_planning": true, "team_coordination": true}'
+      TMWS_AUTH_ENABLED: "true"
+      TMWS_MCP_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tmws_network
+    ports:
+      - "8004:8000"
+
+  # Hera - Strategic Commander
+  hera:
+    image: tmws:latest
+    environment:
+      TMWS_DATABASE_URL: postgresql://tmws_user:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/tmws_trinitas
+      TMWS_SECRET_KEY: ${HERA_SECRET_KEY:-hera-secret-key-minimum-32-characters}
+      TMWS_ENVIRONMENT: production
+      TMWS_AGENT_ID: hera-strategist
+      TMWS_AGENT_NAMESPACE: trinitas
+      TMWS_AGENT_CAPABILITIES: '{"strategic_planning": true, "architecture_design": true}'
+      TMWS_AUTH_ENABLED: "true"
+      TMWS_MCP_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tmws_network
+    ports:
+      - "8005:8000"
+
+  # Muses - Knowledge Architect
+  muses:
+    image: tmws:latest
+    environment:
+      TMWS_DATABASE_URL: postgresql://tmws_user:${POSTGRES_PASSWORD:-secure_password}@postgres:5432/tmws_trinitas
+      TMWS_SECRET_KEY: ${MUSES_SECRET_KEY:-muses-secret-key-minimum-32-characters}
+      TMWS_ENVIRONMENT: production
+      TMWS_AGENT_ID: muses-documenter
+      TMWS_AGENT_NAMESPACE: trinitas
+      TMWS_AGENT_CAPABILITIES: '{"documentation": true, "knowledge_management": true}'
+      TMWS_AUTH_ENABLED: "true"
+      TMWS_MCP_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tmws_network
+    ports:
+      - "8006:8000"
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - tmws_network
+    ports:
+      - "6379:6379"
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - athena
+      - artemis
+      - hestia
+      - eris
+      - hera
+      - muses
+    networks:
+      - tmws_network
+
+networks:
+  tmws_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  audit_logs:

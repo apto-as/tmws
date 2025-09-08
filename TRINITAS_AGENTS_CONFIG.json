@@ -1,0 +1,185 @@
+{
+  "athena_conductor": {
+    "description": "Athena - Harmonious Conductor (システム調整と戦略的オーケストレーション)",
+    "environment_variables": {
+      "TMWS_DATABASE_URL": "postgresql://tmws_user:secure_password@localhost:5432/tmws_trinitas",
+      "TMWS_SECRET_KEY": "trinitas-athena-secret-key-minimum-32-characters-2024",
+      "TMWS_ENVIRONMENT": "production",
+      "TMWS_AGENT_ID": "athena-conductor",
+      "TMWS_AGENT_NAMESPACE": "trinitas",
+      "TMWS_AGENT_CAPABILITIES": "{\"orchestration\": true, \"workflow_automation\": true, \"resource_optimization\": true, \"parallel_execution\": true, \"task_delegation\": true, \"system_coordination\": true}",
+      "TMWS_AUTH_ENABLED": "true",
+      "TMWS_MCP_ENABLED": "true",
+      "TMWS_LOG_LEVEL": "INFO",
+      "TMWS_TACTICAL_MODE": "balanced"
+    }
+  },
+  
+  "artemis_optimizer": {
+    "description": "Artemis - Technical Perfectionist (技術的卓越性とパフォーマンス最適化)",
+    "environment_variables": {
+      "TMWS_DATABASE_URL": "postgresql://tmws_user:secure_password@localhost:5432/tmws_trinitas",
+      "TMWS_SECRET_KEY": "trinitas-artemis-secret-key-minimum-32-characters-2024",
+      "TMWS_ENVIRONMENT": "production",
+      "TMWS_AGENT_ID": "artemis-optimizer",
+      "TMWS_AGENT_NAMESPACE": "trinitas",
+      "TMWS_AGENT_CAPABILITIES": "{\"performance_optimization\": true, \"code_quality\": true, \"technical_excellence\": true, \"algorithm_design\": true, \"efficiency_improvement\": true, \"best_practices\": true}",
+      "TMWS_AUTH_ENABLED": "true",
+      "TMWS_MCP_ENABLED": "true",
+      "TMWS_LOG_LEVEL": "INFO",
+      "TMWS_TACTICAL_MODE": "aggressive"
+    }
+  },
+  
+  "hestia_auditor": {
+    "description": "Hestia - Security Guardian (セキュリティ監査とリスク管理)",
+    "environment_variables": {
+      "TMWS_DATABASE_URL": "postgresql://tmws_user:secure_password@localhost:5432/tmws_trinitas",
+      "TMWS_SECRET_KEY": "trinitas-hestia-secret-key-minimum-32-characters-2024",
+      "TMWS_ENVIRONMENT": "production",
+      "TMWS_AGENT_ID": "hestia-auditor",
+      "TMWS_AGENT_NAMESPACE": "trinitas",
+      "TMWS_AGENT_CAPABILITIES": "{\"security_analysis\": true, \"vulnerability_assessment\": true, \"risk_management\": true, \"threat_modeling\": true, \"compliance_verification\": true, \"audit_logging\": true}",
+      "TMWS_AUTH_ENABLED": "true",
+      "TMWS_MCP_ENABLED": "true",
+      "TMWS_SECURITY_HEADERS_ENABLED": "true",
+      "TMWS_AUDIT_LOG_ENABLED": "true",
+      "TMWS_SECURITY_LOG_ENABLED": "true",
+      "TMWS_LOG_LEVEL": "WARNING",
+      "TMWS_TACTICAL_MODE": "defensive",
+      "TMWS_MAX_LOGIN_ATTEMPTS": "3",
+      "TMWS_LOCKOUT_DURATION_MINUTES": "30"
+    }
+  },
+  
+  "eris_coordinator": {
+    "description": "Eris - Tactical Coordinator (戦術計画とチーム調整)",
+    "environment_variables": {
+      "TMWS_DATABASE_URL": "postgresql://tmws_user:secure_password@localhost:5432/tmws_trinitas",
+      "TMWS_SECRET_KEY": "trinitas-eris-secret-key-minimum-32-characters-2024",
+      "TMWS_ENVIRONMENT": "production",
+      "TMWS_AGENT_ID": "eris-coordinator",
+      "TMWS_AGENT_NAMESPACE": "trinitas",
+      "TMWS_AGENT_CAPABILITIES": "{\"tactical_planning\": true, \"team_coordination\": true, \"conflict_resolution\": true, \"workflow_orchestration\": true, \"collaboration\": true, \"balance_adjustment\": true}",
+      "TMWS_AUTH_ENABLED": "true",
+      "TMWS_MCP_ENABLED": "true",
+      "TMWS_LOG_LEVEL": "INFO",
+      "TMWS_TACTICAL_MODE": "balanced"
+    }
+  },
+  
+  "hera_strategist": {
+    "description": "Hera - Strategic Commander (戦略計画とアーキテクチャ設計)",
+    "environment_variables": {
+      "TMWS_DATABASE_URL": "postgresql://tmws_user:secure_password@localhost:5432/tmws_trinitas",
+      "TMWS_SECRET_KEY": "trinitas-hera-secret-key-minimum-32-characters-2024",
+      "TMWS_ENVIRONMENT": "production",
+      "TMWS_AGENT_ID": "hera-strategist",
+      "TMWS_AGENT_NAMESPACE": "trinitas",
+      "TMWS_AGENT_CAPABILITIES": "{\"strategic_planning\": true, \"architecture_design\": true, \"long_term_vision\": true, \"roadmap_development\": true, \"stakeholder_management\": true, \"user_experience\": true}",
+      "TMWS_AUTH_ENABLED": "true",
+      "TMWS_MCP_ENABLED": "true",
+      "TMWS_LOG_LEVEL": "INFO",
+      "TMWS_TACTICAL_MODE": "balanced"
+    }
+  },
+  
+  "muses_documenter": {
+    "description": "Muses - Knowledge Architect (ドキュメント作成とナレッジ管理)",
+    "environment_variables": {
+      "TMWS_DATABASE_URL": "postgresql://tmws_user:secure_password@localhost:5432/tmws_trinitas",
+      "TMWS_SECRET_KEY": "trinitas-muses-secret-key-minimum-32-characters-2024",
+      "TMWS_ENVIRONMENT": "production",
+      "TMWS_AGENT_ID": "muses-documenter",
+      "TMWS_AGENT_NAMESPACE": "trinitas",
+      "TMWS_AGENT_CAPABILITIES": "{\"documentation\": true, \"knowledge_management\": true, \"specification_writing\": true, \"api_documentation\": true, \"archive_management\": true, \"content_structuring\": true}",
+      "TMWS_AUTH_ENABLED": "true",
+      "TMWS_MCP_ENABLED": "true",
+      "TMWS_LOG_LEVEL": "INFO"
+    }
+  },
+  
+  "shared_configuration": {
+    "description": "全Trinitasエージェント共通設定",
+    "database": {
+      "host": "localhost",
+      "port": 5432,
+      "database": "tmws_trinitas",
+      "user": "tmws_user",
+      "sslmode": "prefer",
+      "pool_size": 10,
+      "max_overflow": 20
+    },
+    "vector_search": {
+      "TMWS_EMBEDDING_MODEL": "all-MiniLM-L6-v2",
+      "TMWS_VECTOR_DIMENSION": "384",
+      "TMWS_MAX_EMBEDDING_BATCH_SIZE": "32"
+    },
+    "api_settings": {
+      "TMWS_API_HOST": "127.0.0.1",
+      "TMWS_API_PORT": "8000",
+      "TMWS_CORS_ORIGINS": "[\"http://localhost:3000\", \"http://localhost:8080\"]"
+    },
+    "rate_limiting": {
+      "TMWS_RATE_LIMIT_ENABLED": "true",
+      "TMWS_RATE_LIMIT_REQUESTS": "1000",
+      "TMWS_RATE_LIMIT_PERIOD": "60"
+    },
+    "memory_access_rules": {
+      "athena": {
+        "access_level": "system",
+        "can_access": ["all"],
+        "share_with": ["artemis", "hestia", "eris", "hera", "muses"]
+      },
+      "artemis": {
+        "access_level": "team",
+        "can_access": ["team", "public", "system"],
+        "share_with": ["athena", "hestia", "eris"]
+      },
+      "hestia": {
+        "access_level": "system",
+        "can_access": ["all"],
+        "share_with": ["athena"],
+        "special_permissions": ["audit_all", "security_override"]
+      },
+      "eris": {
+        "access_level": "team",
+        "can_access": ["team", "public", "system"],
+        "share_with": ["athena", "artemis", "hera"]
+      },
+      "hera": {
+        "access_level": "team",
+        "can_access": ["team", "public", "system"],
+        "share_with": ["athena", "eris", "muses"]
+      },
+      "muses": {
+        "access_level": "public",
+        "can_access": ["public", "system"],
+        "share_with": ["all"],
+        "special_permissions": ["read_all_documentation"]
+      }
+    }
+  },
+  
+  "deployment_notes": {
+    "description": "デプロイメント時の注意事項",
+    "requirements": [
+      "PostgreSQL 14+ with pgvector extension",
+      "Python 3.10+",
+      "Redis (optional, for caching)",
+      "SSL certificates for production"
+    ],
+    "setup_commands": [
+      "createdb tmws_trinitas",
+      "psql -d tmws_trinitas -c 'CREATE EXTENSION IF NOT EXISTS vector;'",
+      "alembic upgrade head",
+      "python scripts/setup_security.py"
+    ],
+    "security_notes": [
+      "各エージェントごとに異なるSECRET_KEYを使用",
+      "本番環境では必ずSSL/TLSを有効化",
+      "定期的なキーローテーション実施",
+      "監査ログの定期バックアップ"
+    ]
+  }
+}
