@@ -667,6 +667,8 @@ async def initialize_agent_context():
         
         # Ensure agent is registered
         async with get_db_session() as db_session:
+            # Set the session for the registry service
+            context.registry_service.session = db_session
             agent = await context.registry_service.ensure_agent(
                 agent_id=detected_agent_id,
                 capabilities=context.capabilities,
@@ -690,6 +692,8 @@ async def initialize_agent_context():
             context.agent_id = "default-mcp-agent"
             context.agent_manager.current_agent = context.agent_id
             async with get_db_session() as db_session:
+                # Set the session for the registry service
+                context.registry_service.session = db_session
                 await context.registry_service.ensure_agent(
                     agent_id=context.agent_id,
                     namespace="default",
