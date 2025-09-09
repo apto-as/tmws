@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "tmws": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from", 
+        "git+https://github.com/apto-as/tmws.git", 
+        "tmws-ws-client",
+        "--server",
+        "ws://localhost:8000/ws/mcp"
+      ],
+      "env": {
+        "TMWS_AGENT_ID": "athena-conductor",
+        "TMWS_AGENT_NAMESPACE": "trinitas"
+      }
+    }
+  }
+}

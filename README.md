@@ -1,6 +1,6 @@
 # TMWS - Universal Agent Memory System
 
-Version: 1.0.0
+Version: 2.0.0
 
 ## Overview
 
@@ -14,6 +14,8 @@ TMWS (Trinitas Memory & Workflow Service) is a universal multi-agent memory mana
 - 📋 **Task Management**: Workflow orchestration and task tracking
 - 🔌 **MCP Protocol**: Full Model Context Protocol support
 - 🔒 **Security**: Agent authentication, access control, and audit logging
+- 🌐 **Multi-Client Support** (v2.0): WebSocket-based server for multiple concurrent connections
+- 🚀 **Shared Server Model** (v2.0): Single server instance handles all Claude Code terminals
 
 ## Prerequisites
 
@@ -57,16 +59,45 @@ cp .env.example .env
 
 ## Installation & Usage
 
-### Via uvx (Recommended)
+### Quick Start (v2.0 - Shared Server Model)
+
+#### Step 1: Start the TMWS Server
 
 ```bash
-# Install and run directly from GitHub
-uvx --from git+https://github.com/apto-as/tmws.git tmws
+# Start the server (in a separate terminal)
+uvx --from git+https://github.com/apto-as/tmws.git tmws-server
+
+# Or with custom settings
+tmws-server --host 0.0.0.0 --port 8000 --log-level info
 ```
 
-### Claude Code Configuration
+#### Step 2: Configure Claude Code
 
 Add to your Claude Code config:
+
+```json
+{
+  "mcpServers": {
+    "tmws": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/apto-as/tmws.git",
+        "tmws-ws-client",
+        "--server",
+        "ws://localhost:8000/ws/mcp"
+      ]
+    }
+  }
+}
+```
+
+Now you can open multiple Claude Code terminals and they will all connect to the same server!
+
+### Legacy Mode (v1.0 - Direct Connection)
+
+For single terminal use only:
 
 ```json
 {
@@ -80,7 +111,7 @@ Add to your Claude Code config:
 }
 ```
 
-Note: Environment variables are automatically loaded from `.env` file in the project root.
+Note: v1.0 mode does not support multiple concurrent connections.
 
 ## Default Agents
 
