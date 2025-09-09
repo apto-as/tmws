@@ -1,6 +1,6 @@
 # TMWS - Universal Agent Memory System
 
-Version: 3.1.0
+Version: 1.0.0
 
 ## Overview
 
