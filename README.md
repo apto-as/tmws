@@ -15,6 +15,46 @@ TMWS (Trinitas Memory & Workflow Service) is a universal multi-agent memory mana
 - 🔌 **MCP Protocol**: Full Model Context Protocol support
 - 🔒 **Security**: Agent authentication, access control, and audit logging
 
+## Prerequisites
+
+### PostgreSQL Setup
+
+TMWS requires PostgreSQL with pgvector extension:
+
+```bash
+# 1. Create database and user
+createdb tmws
+createuser tmws_user
+
+# 2. Set password for user
+psql postgres -c "ALTER USER tmws_user WITH PASSWORD 'tmws_password';"
+
+# 3. Grant privileges
+psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE tmws TO tmws_user;"
+
+# 4. Enable required extensions
+PGPASSWORD=tmws_password psql -U tmws_user -d tmws -c "CREATE EXTENSION IF NOT EXISTS vector;"
+PGPASSWORD=tmws_password psql -U tmws_user -d tmws -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+
+# 5. Create database tables
+python setup_database.py
+```
+
+### Environment Configuration
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+# Copy example environment file
+cp .env.example .env
+
+# Edit .env with your settings
+# Key configurations:
+# - TMWS_DATABASE_URL=postgresql://tmws_user:tmws_password@localhost:5432/tmws
+# - TMWS_AGENT_ID=athena-conductor
+# - TMWS_AGENT_NAMESPACE=trinitas
+```
+
 ## Installation & Usage
 
 ### Via uvx (Recommended)
@@ -24,25 +64,23 @@ TMWS (Trinitas Memory & Workflow Service) is a universal multi-agent memory mana
 uvx --from git+https://github.com/apto-as/tmws.git tmws
 ```
 
-### Claude Desktop Configuration
+### Claude Code Configuration
 
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
+Add to your Claude Code config:
 
 ```json
 {
   "mcpServers": {
     "tmws": {
+      "type": "stdio",
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/apto-as/tmws.git", "tmws"],
-      "env": {
-        "TMWS_AGENT_ID": "athena-conductor",
-        "TMWS_AGENT_NAMESPACE": "trinitas",
-        "TMWS_ALLOW_DEFAULT_AGENT": "true"
-      }
+      "args": ["--from", "git+https://github.com/apto-as/tmws.git", "tmws"]
     }
   }
 }
 ```
+
+Note: Environment variables are automatically loaded from `.env` file in the project root.
 
 ## Default Agents
 
@@ -61,11 +99,20 @@ You can register your own agents dynamically. See [CUSTOM_AGENTS_GUIDE.md](CUSTO
 
 ## Environment Variables
 
+All configuration is managed via `.env` file. Key variables:
+
+### Required
+- `TMWS_DATABASE_URL` - PostgreSQL connection string (e.g., `postgresql://tmws_user:tmws_password@localhost:5432/tmws`)
+- `TMWS_SECRET_KEY` - Security key (32+ characters, auto-generated if not set)
+
+### Agent Configuration
 - `TMWS_AGENT_ID` - Agent identifier (e.g., "athena-conductor")
-- `TMWS_AGENT_NAMESPACE` - Agent namespace (default: "default")
-- `TMWS_DATABASE_URL` - PostgreSQL connection string
-- `TMWS_SECRET_KEY` - Security key (32+ characters)
-- `TMWS_ALLOW_DEFAULT_AGENT` - Allow fallback agent for testing
+- `TMWS_AGENT_NAMESPACE` - Agent namespace (default: "trinitas")
+- `TMWS_ALLOW_DEFAULT_AGENT` - Allow fallback agent for testing (default: "true")
+
+### Optional
+- `TMWS_LOG_LEVEL` - Logging level (default: "INFO")
+- `MCP_MODE` - Set to "true" for MCP server mode
 
 ## Requirements
 
